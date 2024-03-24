@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Ricca_Uncensor_Plugin</AssemblyName>
+    <Description>HolyKnightRicca Uncensor Plugin</Description>
+    <Version>1.0.0.0</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+      https://nuget.samboy.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+    <RootNamespace>Ricca_Uncensor_Plugin</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx.Unity.IL2CPP">
+      <HintPath>dlls\BepInEx.Unity.IL2CPP.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.Core">
+      <HintPath>dlls\BepInEx.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>dlls\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="ACTAssemblyDefiniton">
+      <HintPath>dlls\ACTAssemblyDefiniton.dll</HintPath>
+    </Reference>
+    <Reference Include="AppControllerAssemblyDefinition">
+      <HintPath>dlls\AppControllerAssemblyDefinition.dll</HintPath>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>dlls\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>dlls\Il2CppInterop.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>dlls\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>dlls\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>dlls\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>dlls\Il2Cppmscorlib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
