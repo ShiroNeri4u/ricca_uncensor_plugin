@@ -13,10 +13,6 @@
 
 ```
 git clone https://github.com/ShiroNeri4u/ricca_uncensor_plugin.git
-```
-复制游戏目录下的`BepInEx/unity-libs`和`BepInEx/interop`目录下的dll至本地仓库下的dlls目录(没有自行创建)
-
-```
 cd ricca_uncensor_plugin
 dotnet build Ricca_Uncensor_Plugin.csproj
 ```
