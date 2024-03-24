@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using APP;
 using BepInEx;
 using BepInEx.Logging;
@@ -10,7 +9,6 @@ using HarmonyLib;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using Il2CppSystem.Runtime.Remoting.Messaging;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,7 +35,7 @@ public class Ricca_Uncensor_Plugin : MonoBehaviour
 			{
 				value = __instance.hitPointMax;
 			}
-			else if (bKillCheat && (!__instance.IsPlayerActor))
+			else if (bKillCheat && !__instance.IsPlayerActor)
 			{
 			    value = 0;
 			}
@@ -74,7 +72,7 @@ public class Ricca_Uncensor_Plugin : MonoBehaviour
 	public class App_PlayerParameter_SubMagicCrystalCount
 	{
 		[HarmonyPrefix]
-		public static void Prefix(App.PlayerParameter __instance, ref int sub)
+		public static void Prefix(ref int sub)
 		{
 			if (bCrystalCheat)
 			{
@@ -103,7 +101,7 @@ public class Ricca_Uncensor_Plugin : MonoBehaviour
 	public class ACT_CharacterArmorBreaker_SetArmorLevel
 	{
 		[HarmonyPrefix]
-		public static void Prefix(ACT.CharacterArmorBreaker __instance, ref int levelIndex)
+		public static void Prefix(ref int levelIndex)
 		{
 			if (bArmorCheat)
 			{
@@ -116,7 +114,7 @@ public class Ricca_Uncensor_Plugin : MonoBehaviour
 	public class ACT_CharacterArmorBreaker_InternalSetArmorLevel
 	{
 		[HarmonyPrefix]
-		public static void Prefix(ACT.CharacterArmorBreaker __instance, ref int level)
+		public static void Prefix(ACT.CharacterArmorBreaker __instance,ref int level)
 		{
 			if (bArmorCheat)
 			{
@@ -124,6 +122,7 @@ public class Ricca_Uncensor_Plugin : MonoBehaviour
 			}
 		}
 	}
+	
 	private Renderer[] Renderers;
 
 	private Texture2D[] Textures;
