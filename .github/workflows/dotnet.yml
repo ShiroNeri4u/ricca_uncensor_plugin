@@ -23,10 +23,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --os win-x64 Ricca_Uncensor_Plugin.csproj
+      run: dotnet build --os win Ricca_Uncensor_Plugin.csproj
     - name: Upload dll
       uses: actions/upload-artifact@v4.3.1
       with:
         name: Ricca_Uncensor_Plugin.dll
-        path: bin/Debug/net6.0/Ricca_Uncensor_Plugin.dll
+        path: bin/Debug/net6.0/win-x64/Ricca_Uncensor_Plugin.dll
 
