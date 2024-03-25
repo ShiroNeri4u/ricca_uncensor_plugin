@@ -34,8 +34,9 @@ public class Plugin : BasePlugin
         log = base.Log;
 		Harmony harmony = new Harmony("moe.KazamataNeri.Ricca_Uncensor_Plugin");
 		harmony.PatchAll();
-		ClassInjector.RegisterTypeInIl2Cpp<Ricca_Uncensor_Plugin>();
-		base.AddComponent<Ricca_Uncensor_Plugin>();
+		ClassInjector.RegisterTypeInIl2Cpp<CheatPatch>();
+		base.AddComponent<CheatPatch>();
+		base.AddComponent<NoMosaic>();
     }
     
 }
