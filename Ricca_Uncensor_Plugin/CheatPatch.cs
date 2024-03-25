@@ -113,8 +113,6 @@ public class CheatPatch : MonoBehaviour
 
 	private static bool bArmorCheat = false;
 
-	private static bool bTrigger = false;
-
 	private static int ArmorLevel = -2;
 
 	private static string[] ArmorStatus = {"关闭","崭新如初","轻微破损","严重破损","完全破损"};
@@ -205,7 +203,6 @@ public class CheatPatch : MonoBehaviour
 			{
 				if (ArmorLevel < 2){
 					ArmorLevel++;
-					bTrigger = true;
 				}
 				else
 				{

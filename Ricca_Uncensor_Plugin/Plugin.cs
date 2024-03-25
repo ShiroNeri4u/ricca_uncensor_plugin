@@ -16,7 +16,7 @@ public class Plugin : BasePlugin
 
 	public const string GUID = "moe.KazamataNeri.Ricca_Uncensor_Plugin";
 
-	public const string VERSION = "1.0.0";
+	public const string VERSION = "1.0.1";
 
 	internal static ManualLogSource log;
 
