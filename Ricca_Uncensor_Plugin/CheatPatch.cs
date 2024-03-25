@@ -3,6 +3,7 @@ using APP;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 namespace Ricca_Uncensor_Plugin;
 
@@ -39,18 +40,19 @@ public class CheatPatch : MonoBehaviour
 		}
 	}
 	
-	[HarmonyPatch(typeof(ACT.SpecialAttackData), "StartAttack")]
-	public class SpecialAttack_CoolTimeCheat
+	[HarmonyPatch(typeof(CharacterActor), "TrySpecialAttackStart")]
+	public class CharacterActor_CoolTimeCheat
 	{	
 		[HarmonyPrefix]
-		public static void Prefix(ref float coolTime)
+		public static void Prefix(CharacterActor __instance, ref bool isCooling)
 		{
-			if (bSkillCheat)
+			if (bSkillCheat && __instance.IsPlayerActor)
 			{
-				coolTime = 0;
+				isCooling = false;
 			}
 		}
 	}
+
     
 	[HarmonyPatch(typeof(App.PlayerParameter), "SubMagicCrystalCount")]
 	public class MagicCrystal_Cheat
@@ -65,24 +67,8 @@ public class CheatPatch : MonoBehaviour
 		}
 	}
 
-	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "Initialize")]
-	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "BreakArmor")]
-	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "RestoreArmor")]
-	public class Armor_Cheat
-	{
-		[HarmonyPostfix]
-		public static void Postfix(ACT.CharacterArmorBreaker __instance)
-		{
-			if (bArmorCheat)
-			{
-				__instance.SetArmorLevel(ArmorLevel,ACT.CharacterArmorBreaker.CostumeUpdateMode.Normal);
-				__instance.InternalSetArmorLevel(ArmorLevel,ACT.CharacterArmorBreaker.CostumeUpdateMode.Normal);
-			}
-		}
-	}
-
 	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "SetArmorLevel")]
-	public class Armor_Cheat2
+	public class Armor_Cheat
 	{
 		[HarmonyPrefix]
 		public static void Prefix(ref int levelIndex)
@@ -95,7 +81,7 @@ public class CheatPatch : MonoBehaviour
 	}
 
 	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "InternalSetArmorLevel")]
-	public class ACT_CharacterArmorBreaker_InternalSetArmorLevel
+	public class InternalArmor_Cheat
 	{
 		[HarmonyPrefix]
 		public static void Prefix(ACT.CharacterArmorBreaker __instance,ref int level)
@@ -127,11 +113,15 @@ public class CheatPatch : MonoBehaviour
 
 	private static bool bArmorCheat = false;
 
+	private static bool bTrigger = false;
+
 	private static int ArmorLevel = -2;
 
 	private static string[] ArmorStatus = {"关闭","崭新如初","轻微破损","严重破损","完全破损"};
 
-    public void Awake()
+	public GameObject CharacterActor;
+
+	public void Awake()
 	{
 		Harmony harmony = new Harmony("moe.KazamataNeri.ricca_uncensor_plugin.patch");
 		harmony.PatchAll();
@@ -215,6 +205,7 @@ public class CheatPatch : MonoBehaviour
 			{
 				if (ArmorLevel < 2){
 					ArmorLevel++;
+					bTrigger = true;
 				}
 				else
 				{
