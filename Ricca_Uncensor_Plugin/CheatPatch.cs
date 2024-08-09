@@ -4,8 +4,6 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
-using System.Reflection;
-using ACT;
 
 namespace Ricca_Uncensor_Plugin;
 
@@ -121,10 +119,9 @@ public class CheatPatch : MonoBehaviour
 
 	public GameObject CharacterActor;
 
-	private static Action<CharacterArmorBreaker, int, CharacterArmorBreaker.CostumeUpdateMode> delegate_characterArmorBreaker_SetArmorLevel;
-
-
-    public void Awake()
+	private static Action<ACT.CharacterArmorBreaker, int, ACT.CharacterArmorBreaker.CostumeUpdateMode> delegate_characterArmorBreaker_SetArmorLevel;
+	
+	public void Awake()
 	{
 		Harmony harmony = new Harmony("moe.KazamataNeri.ricca_uncensor_plugin.patch");
 		harmony.PatchAll();
@@ -221,16 +218,21 @@ public class CheatPatch : MonoBehaviour
 				{
 					bArmorCheat = true;
 				}
-                delegate_characterArmorBreaker_SetArmorLevel ??=
-                    AccessTools.Method(typeof(CharacterArmorBreaker), "SetArmorLevel", [typeof(int), typeof(CharacterArmorBreaker.CostumeUpdateMode)], null)
-                    .CreateDelegate<Action<CharacterArmorBreaker, int, CharacterArmorBreaker.CostumeUpdateMode>>();
-				foreach (var breaker in GameObject.FindObjectsOfType<CharacterArmorBreaker>())
-					delegate_characterArmorBreaker_SetArmorLevel.Invoke(breaker, ArmorLevel, CharacterArmorBreaker.CostumeUpdateMode.Force);
+				SetCharacterArmorLevelImmediate();
 				string text = ArmorStatus[ArmorLevel + 2];
 				bCrystalCheat = !bCrystalCheat;
 				toast_txt = "※衣服破损值锁定 " + text;
 				dtStartToast = DateTime.Now;
 			}
 		}
+	}
+
+	private void SetCharacterArmorLevelImmediate()
+	{
+		delegate_characterArmorBreaker_SetArmorLevel ??=
+			AccessTools.Method(typeof(ACT.CharacterArmorBreaker), "SetArmorLevel", [typeof(int), typeof(ACT.CharacterArmorBreaker.CostumeUpdateMode)], null)
+			.CreateDelegate<Action<ACT.CharacterArmorBreaker, int, ACT.CharacterArmorBreaker.CostumeUpdateMode>>();
+		foreach (var breaker in GameObject.FindObjectsOfType<ACT.CharacterArmorBreaker>())
+			delegate_characterArmorBreaker_SetArmorLevel.Invoke(breaker, ArmorLevel, ACT.CharacterArmorBreaker.CostumeUpdateMode.Force);
 	}
 }
