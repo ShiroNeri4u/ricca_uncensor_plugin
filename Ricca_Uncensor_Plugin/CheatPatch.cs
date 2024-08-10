@@ -84,7 +84,7 @@ public class CheatPatch : MonoBehaviour
 	public class InternalArmor_Cheat
 	{
 		[HarmonyPrefix]
-		public static void Prefix(ACT.CharacterArmorBreaker __instance,ref int level)
+		public static void Prefix(ref int level)
 		{
 			if (bArmorCheat)
 			{
@@ -120,7 +120,7 @@ public class CheatPatch : MonoBehaviour
 	public GameObject CharacterActor;
 
 	private static Action<ACT.CharacterArmorBreaker, int, ACT.CharacterArmorBreaker.CostumeUpdateMode> delegate_characterArmorBreaker_SetArmorLevel;
-	
+
 	public void Awake()
 	{
 		Harmony harmony = new Harmony("moe.KazamataNeri.ricca_uncensor_plugin.patch");
