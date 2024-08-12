@@ -1,6 +1,7 @@
 using System;
 using APP;
 using HarmonyLib;
+using BepInEx.Logging;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
@@ -71,24 +72,24 @@ public class CheatPatch : MonoBehaviour
 	public class Armor_Cheat
 	{
 		[HarmonyPrefix]
-		public static void Prefix(ref int levelIndex)
+		public static void Prefix(ACT.CharacterArmorBreaker __instance, ref int levelIndex)
 		{
-			if (bArmorCheat)
+			if (bArmorCheat && __instance.parentActor.IsPlayerActor)
 			{
 				levelIndex = ArmorLevel;
 			}
 		}
 	}
 
-	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "InternalSetArmorLevel")]
-	public class InternalArmor_Cheat
+	[HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "Initialize")]
+	public class Initialize
 	{
-		[HarmonyPrefix]
-		public static void Prefix(ref int level)
+		[HarmonyPostfix]
+		public static void Postfix(ACT.CharacterArmorBreaker __instance)
 		{
-			if (bArmorCheat)
+			if (__instance.parentActor.IsPlayerActor)
 			{
-				level = ArmorLevel;
+				ArmorLevel = __instance.CurrentArmorLevelIndex;
 			}
 		}
 	}
@@ -97,11 +98,13 @@ public class CheatPatch : MonoBehaviour
 
 	private static bool bHelpShow = true;
 
-	public static string toast_txt = "";
+	public static string toast_txt;
 
 	private static DateTime dtStart;
 
 	public static DateTime? dtStartToast = null;
+
+	public static bool bNoMosaic = true;
 
 	private static bool bPlayerCheat = false;
 
@@ -113,9 +116,15 @@ public class CheatPatch : MonoBehaviour
 
 	private static bool bArmorCheat = false;
 
-	private static int ArmorLevel = -2;
+	private static int ArmorLevel;
 
-	private static string[] ArmorStatus = {"关闭","崭新如初","轻微破损","严重破损","完全破损"};
+	private enum ArmorStatus
+	{
+		Perfect = -1,
+		Torn = 0,
+		ripped = 1,
+		Shredded  = 2
+	}
 
 	public GameObject CharacterActor;
 
@@ -123,8 +132,6 @@ public class CheatPatch : MonoBehaviour
 
 	public void Awake()
 	{
-		Harmony harmony = new Harmony("moe.KazamataNeri.ricca_uncensor_plugin.patch");
-		harmony.PatchAll();
 		dtStart = DateTime.Now;
 	}
 
@@ -177,52 +184,49 @@ public class CheatPatch : MonoBehaviour
 		}
 		if (Event.current.type == EventType.KeyUp)
 		{
-			if (Event.current.keyCode == KeyCode.F1)
+			switch (Event.current.keyCode)
 			{
-				bPlayerCheat = !bPlayerCheat;
-				toast_txt = "※HP/MP锁定 " + (bPlayerCheat ? "开启" : "关闭");
-				dtStartToast = DateTime.Now;
-			}
-			else if (Event.current.keyCode == KeyCode.F2)
-			{
-				bSkillCheat = !bSkillCheat;
-				toast_txt = "※技能无冷却 " + (bSkillCheat ? "开启" : "关闭");
-				dtStartToast = DateTime.Now;
-			}
-			else if (Event.current.keyCode == KeyCode.F3)
-			{
-				bKillCheat = !bKillCheat;
-				toast_txt = "※一击必杀" + (bKillCheat ? "开启" : "关闭");
-				dtStartToast = DateTime.Now;
-			}
-			else if (Event.current.keyCode == KeyCode.F4)
-			{
-				bCrystalCheat = !bCrystalCheat;
-				toast_txt = "※魔法石不消耗 " + (bCrystalCheat ? "开启" : "关闭");
-				dtStartToast = DateTime.Now;
-			}
-			else if (Event.current.keyCode == KeyCode.F5)
-			{
-				if (ArmorLevel < 2){
-					ArmorLevel++;
-				}
-				else
-				{
-					ArmorLevel = -2;
-				}
-				if (ArmorLevel == -2)
-				{
-					bArmorCheat = false;
-				}
-				else
-				{
-					bArmorCheat = true;
-				}
-				SetCharacterArmorLevelImmediate();
-				string text = ArmorStatus[ArmorLevel + 2];
-				bCrystalCheat = !bCrystalCheat;
-				toast_txt = "※衣服破损值锁定 " + text;
-				dtStartToast = DateTime.Now;
+				case KeyCode.F1:
+					bPlayerCheat = !bPlayerCheat;
+					toast_txt = "※HP/MP锁定 " + (bPlayerCheat ? "开启" : "关闭");
+					dtStartToast = DateTime.Now;
+					break;
+				case KeyCode.F2:
+					bSkillCheat = !bSkillCheat;
+					toast_txt = "※技能无冷却 " + (bSkillCheat ? "开启" : "关闭");
+					dtStartToast = DateTime.Now;
+					break;
+				case KeyCode.F3:
+					bKillCheat = !bKillCheat;
+					toast_txt = "※一击必杀" + (bKillCheat ? "开启" : "关闭");
+					dtStartToast = DateTime.Now;
+					break;
+				case KeyCode.F4:
+					bCrystalCheat = !bCrystalCheat;
+					toast_txt = "※魔法石不消耗 " + (bCrystalCheat ? "开启" : "关闭");
+					dtStartToast = DateTime.Now;
+					break;
+				case KeyCode.F5:
+					bArmorCheat = !bArmorCheat;
+					toast_txt = "※衣服破损程度锁定 " + (bArmorCheat ? "开启" : "关闭");
+					dtStartToast = DateTime.Now;
+					break;
+				case KeyCode.F6:
+					if(ArmorLevel > -1)
+					{
+						ArmorLevel--;
+						SetCharacterArmorLevelImmediate();
+					}
+					toast_txt = "※衣服破损程度 " + Enum.GetName(typeof(ArmorStatus), ArmorLevel);
+					break;
+				case KeyCode.F7:
+					if(ArmorLevel < 2)
+					{
+						ArmorLevel++;
+						SetCharacterArmorLevelImmediate();
+					}
+					toast_txt = "※衣服破损程度 " + Enum.GetName(typeof(ArmorStatus), ArmorLevel);
+					break;
 			}
 		}
 	}
@@ -230,9 +234,14 @@ public class CheatPatch : MonoBehaviour
 	private void SetCharacterArmorLevelImmediate()
 	{
 		delegate_characterArmorBreaker_SetArmorLevel ??=
-			AccessTools.Method(typeof(ACT.CharacterArmorBreaker), "SetArmorLevel", [typeof(int), typeof(ACT.CharacterArmorBreaker.CostumeUpdateMode)], null)
+			AccessTools.Method(typeof(ACT.CharacterArmorBreaker), "SetArmorLevel",new [] { typeof(int), typeof(ACT.CharacterArmorBreaker.CostumeUpdateMode) }, null)
 			.CreateDelegate<Action<ACT.CharacterArmorBreaker, int, ACT.CharacterArmorBreaker.CostumeUpdateMode>>();
 		foreach (var breaker in GameObject.FindObjectsOfType<ACT.CharacterArmorBreaker>())
-			delegate_characterArmorBreaker_SetArmorLevel.Invoke(breaker, ArmorLevel, ACT.CharacterArmorBreaker.CostumeUpdateMode.Force);
+		{
+			if(breaker.parentActor.IsPlayerActor)
+			{
+				delegate_characterArmorBreaker_SetArmorLevel.Invoke(breaker, ArmorLevel, ACT.CharacterArmorBreaker.CostumeUpdateMode.Normal);
+			}
+		}
 	}
 }

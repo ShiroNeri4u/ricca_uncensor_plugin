@@ -21,7 +21,10 @@ public class NoMosaic : MonoBehaviour
 
     public void Update() 
     {
-		MosaicRemove();
+		if(CheatPatch.bNoMosaic)
+		{
+			MosaicRemove();
+		}
 	}
 
 	private static bool bMosaicCheck = false;
@@ -38,7 +41,7 @@ public class NoMosaic : MonoBehaviour
 
 	private static string mod = "mod_";
 
-	private string OldSceneName = "";
+	private string OldSceneName;
 
 	private Renderer[] Renderers;
 
