@@ -2,7 +2,6 @@ using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
-using Il2CppInterop.Runtime.Injection;
 
 namespace Ricca_Uncensor_Plugin;
 
@@ -21,23 +20,22 @@ public class Plugin : BasePlugin
 	internal static ManualLogSource log;
 
 	public static new void Log(LogLevel lv, object data)
+	{
+		ManualLogSource manualLogSource = Plugin.log;
+		if (manualLogSource != null)
 		{
-			ManualLogSource manualLogSource = Plugin.log;
-			if (manualLogSource != null)
-			{
-				manualLogSource.Log(lv, data);
-			}
+			manualLogSource.Log(lv, data);
 		}
+	}
 
     public override void Load()
     {
         log = base.Log;
 		Harmony harmony = new Harmony("moe.KazamataNeri.Ricca_Uncensor_Plugin");
 		harmony.PatchAll();
-		ClassInjector.RegisterTypeInIl2Cpp<CheatPatch>();
-		ClassInjector.RegisterTypeInIl2Cpp<ArmorBreakGUI>();
-		base.AddComponent<CheatPatch>();
-		base.AddComponent<ArmorBreakGUI>();
+		base.AddComponent<ArmorBreakerMonitor>();
+		base.AddComponent<LanguageInit>();
+		base.AddComponent<CheatMenu>();
 		base.AddComponent<NoMosaic>();
     }
     

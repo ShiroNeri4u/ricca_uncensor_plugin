@@ -19,9 +19,9 @@ public class NoMosaic : MonoBehaviour
 		getImages();
 	}
 
-    public void Update() 
+    private void Update() 
     {
-		if(CheatPatch.bNoMosaic)
+		if(CheatMenu.NoMosaic.Status)
 		{
 			MosaicRemove();
 		}
