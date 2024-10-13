@@ -5,103 +5,95 @@ using UnityEngine;
 
 namespace Ricca_Uncensor_Plugin;
 
-public class CheatMenu : MonoBehaviour
+public class Widget
 {
-    /* 作弊数值调整
-    private static bool bPlayerDamageReduction;
+    public String Text;
+}
 
-    private static float PlayerDamageReduction;
 
-    private static bool bEnemyDamageReduction;
+public sealed class CheatBar : Widget
+{
+    public Rect LabelRect;
+    public Rect ToggleRect;
+    public int Id;
+    public CheatBar(String text, int id)
+    {
+        Text = text;
+        Id = id;
+    }
+}
 
-    private static float EnemyDamageReduction;
+public sealed class BasicCheatToggle : Widget
+{
+    public bool Status;
+    public Rect LabelRect;
+    public Rect ToggleRect;
+    public BasicCheatToggle(String text, bool status)
+    {
+        Text = text;
+        Status = status;
+    }
+}
 
-    private static bool bPlayerMpConsumption;
-
-    private static float PlayerMpConsumption;*/
+public sealed class CheatMenu : MonoBehaviour
+{
     private static List<string> langtext;
 
     private static bool bMenu = false;
-    private static int SelectLevel;
-    public class Toggle
-    {
-        public string Name{get; set;}
-        public bool Status{get; set;}
-    }
 
-    public static Toggle PlayerHpNotDecrease = new Toggle()
-    {
-        Name = "※" + GetLanguageText("PlayerHpNotDecrease"),
-        Status = false
-    };
+    public static CheatBar BasicPanel = new CheatBar(GetLanguageText("BasicPanel"), (int)Panel.BasicPanel);
 
-    public static Toggle PlayerMpNotDecrease = new Toggle()
-    {
-        Name = "※" + GetLanguageText("PlayerMpNotDecrease"),
-        Status = false
-    };
+    public static CheatBar AdvancedPanel = new CheatBar(GetLanguageText("AdvancedPanel"), (int)Panel.AdvancedPanel);
 
-    public static Toggle SkillHasNotCoolTime = new Toggle()
-    {
-        Name = "※" + GetLanguageText("SkillHasNotCoolTime"),
-        Status = false
-    };
+    public static CheatBar ArmorManagerPanel = new CheatBar(GetLanguageText("ArmorManagerPanel"), (int)Panel.ArmorManagerPanel);
 
-    public static Toggle EnemyBeInstantlyKilled = new Toggle()
-    {
-        Name = "※" + GetLanguageText("EnemyBeInstantlyKilled"),
-        Status = false
-    };
+    public static BasicCheatToggle PlayerHpNotDecrease = new BasicCheatToggle(GetLanguageText("PlayerHpNotDecrease"), false);
 
-    public static Toggle CrystalNotDecrease = new Toggle()
-    {
-        Name = "※" + GetLanguageText("CrystalNotDecrease"),
-        Status = false
-    };
+    public static BasicCheatToggle PlayerMpNotDecrease = new BasicCheatToggle(GetLanguageText("PlayerMpNotDecrease"), false);
 
-    public static Toggle PlayerArmorBreakLock = new Toggle()
-    {
-        Name = "※" + GetLanguageText("PlayerArmorBreakLock"),
-        Status = false
-    };
+    public static BasicCheatToggle SkillHasNotCoolTime = new BasicCheatToggle(GetLanguageText("SkillHasNotCoolTime"), false);
 
-    public static Toggle NoMosaic = new Toggle()
-    {
-        Name = "※" + GetLanguageText("NoMosaic"),
-        Status = true
-    };
+    public static BasicCheatToggle EnemyBeInstantlyKilled = new BasicCheatToggle(GetLanguageText("EnemyBeInstantlyKilled"), false);
 
-    private static float WidthScale;
+    public static BasicCheatToggle CrystalNotDecrease = new BasicCheatToggle(GetLanguageText("CrystalNotDecrease"), false);
 
-    private static float HeightScale;
+    public static BasicCheatToggle PlayerArmorBreakLock = new BasicCheatToggle(GetLanguageText("PlayerArmorBreakLock"), false);
 
-    private static float AspectRatio;
+    public static BasicCheatToggle NoMosaic = new BasicCheatToggle(GetLanguageText("NoMosaic"), true);
 
-    private static float WindowWidth;
+    public static float WidthScale;
 
-    private static float WindowHeight;
+    public static float HeightScale;
 
-    private static Rect WindowRect;
+    public static float AspectRatio;
 
-    private static float BarWidth;
+    public static float WindowWidth;
 
-    private static float BarHeight;
+    public static float WindowHeight;
 
-    private static Rect BarRect;
+    public static float SingleWidth;
+
+    public static float SingleHeight;
+
+    public static Rect WindowRect;
 
     public static int PanelId;
 
     public enum Panel
     {
-        BasicsPanel = 0,
+        BasicPanel = 0,
         AdvancedPanel = 1,
         ArmorManagerPanel = 2
     }
 
-    //private static string[] PanelName = new string[] {GetLanguageText("BasicPanel"), GetLanguageText("AdvancePanel"), GetLanguageText("ArmorManager")};
-    private static string[] PanelName = {"1","2","3"};
+    private static List<CheatBar> CheatBarList = new List<CheatBar>
+    {
+        BasicPanel,
+        AdvancedPanel,
+        ArmorManagerPanel
+    };
 
-    private static List<Toggle> BasicsFuncList = new List<Toggle>
+    private static List<BasicCheatToggle> BasicToggleList = new List<BasicCheatToggle>
     {
         PlayerHpNotDecrease,
         PlayerMpNotDecrease,
@@ -131,6 +123,7 @@ public class CheatMenu : MonoBehaviour
     public void Start()
     {
         AspectRatioCalc();
+        InitCheatMenu();
     }
 
     public void OnGUI()
@@ -144,7 +137,7 @@ public class CheatMenu : MonoBehaviour
         }
         if(bMenu)
         {
-            WindowRect = GUI.Window(0, WindowRect, (GUI.WindowFunction)WindowFunction, GetLanguageText("CheatMenu"));
+            WindowRect = GUI.ModalWindow(0, WindowRect, (GUI.WindowFunction)WindowFunction, GetLanguageText("CheatMenu"));
         }
     }
 
@@ -158,7 +151,9 @@ public class CheatMenu : MonoBehaviour
                 WidthScale = Math.Abs((float)Screen.width / ratio.Value[1]);
                 HeightScale = Math.Abs((float)Screen.height / ratio.Value[2]);
                 WindowWidth = 200f * WidthScale;
-                WindowHeight = 150f * HeightScale;
+                WindowHeight = 140f * HeightScale;
+                SingleWidth = 14f * WidthScale;
+                SingleHeight = 14f * HeightScale;
                 WindowRect = new Rect(Math.Abs(((float)Screen.width - WindowWidth)/ 2), (5f * HeightScale),WindowWidth , WindowHeight);
                 break;
             }
@@ -177,52 +172,92 @@ public class CheatMenu : MonoBehaviour
             return false;
         }
     }
+
+    private static void InitCheatMenu()
+    {
+        var CheatBarX = 10f * WidthScale;
+        foreach(var toggle in CheatBarList)
+        {
+            toggle.LabelRect = new Rect(CheatBarX + SingleWidth, SingleHeight, 46f * WidthScale, SingleHeight);
+            toggle.ToggleRect = new Rect(CheatBarX, SingleHeight, 60f * WidthScale, SingleHeight);
+            CheatBarX += 60f * HeightScale;
+        }
+        var BasicPanelY = 2 * SingleHeight;
+        foreach(var toggle in BasicToggleList)
+        {
+            toggle.LabelRect = new Rect(14f * WidthScale, BasicPanelY, WindowWidth - SingleWidth, SingleHeight);
+            toggle.ToggleRect = new Rect(WindowWidth - 20f * WidthScale, BasicPanelY, 14f, 14f);
+            BasicPanelY += 14f * HeightScale;
+        }
+    }
+
     private static void WindowFunction(int windowId)
     {
-        BarWidth = 180f * WidthScale;
-        BarHeight = 15f * HeightScale;
-        BarRect = new Rect((WindowWidth - BarWidth) / 2, 12f * HeightScale, BarWidth, BarHeight);
-        PanelId = GUI.Toolbar(BarRect, PanelId, (Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray)PanelName);
+        foreach(var toggle in CheatBarList)
+        {
+            LabelToggleBar(toggle);
+        }
         switch(PanelId)
         {
-            case (int)Panel.BasicsPanel:
-                var BasicsPanelY = 12f * HeightScale + BarHeight;
-                foreach(var func in BasicsFuncList)
+            case (int)Panel.BasicPanel:
+                foreach(var toggle in BasicToggleList)
                 {
-                    LabelToggle(func, BasicsPanelY);
-                    BasicsPanelY += 15f * HeightScale;
+                    LabelToggle(toggle);
                 }
                 break;
             case (int)Panel.AdvancedPanel:
                 break;
             case (int)Panel.ArmorManagerPanel:
-                
                 break;
         }
         GUI.DragWindow(new Rect(0, 0, Screen.width, Screen.height));
     }
 
-    private static void LabelToggle(Toggle toggle, float y)
+    private static void LabelToggleBar(CheatBar toggle)
     {
-        GUI.Label(new Rect(15f * WidthScale, y, WindowWidth - 15f * WidthScale, 15f * HeightScale), toggle.Name);
-        toggle.Status = GUI.Toggle(new Rect(WindowWidth - 20f * WidthScale, y, 15f * WidthScale, 15f * HeightScale), toggle.Status, "");
+        GUI.Label(toggle.LabelRect, toggle.Text);
+        if(GUI.Toggle(toggle.ToggleRect, PanelId == toggle.Id, ""))
+        {
+            PanelId = toggle.Id;
+        }
     }
 
-    private static void ArmorLabelToobar(int id, float y)
+    private static void LabelToggle(BasicCheatToggle toggle)
     {
-        var ListLength = ArmorBreakerMonitor.instance.GetMaxLevel(id);
-        var List = new string[ListLength];
-        var select = ArmorBreakerMonitor.instance.GetCurrenctLevel(id);
-        for(int count = 0; count < ListLength; count ++)
+        GUI.Label(toggle.LabelRect, toggle.Text);
+        toggle.Status = GUI.Toggle(toggle.ToggleRect, toggle.Status, "");
+    }
+
+    public static void ArmorLabelToolbar(ArmorBreakerMonitor monitor)
+    {
+        GUI.Label(monitor.LabelRect, monitor.Name);
+        var count = 0;
+        for(var index = -1; index < monitor.MaxLevel; index++)
         {
-            List[count] = GetLanguageText(AmrorStatus[count]);
+            monitor.Toggle[index] = GUI.Toggle(monitor.ToggleRect[index], monitor.Toggle[index], "");
+            if(monitor.Toggle[index])
+            {
+                count++;
+            }
         }
-        GUI.Label(new Rect(15f * WidthScale, y, WindowWidth - 15f * WidthScale, 15f * HeightScale), ArmorBreakerMonitor.instance.GetName(id));
-        var ButtonWidth = 100f * HeightScale;
-        SelectLevel = GUI.Toolbar(new Rect(WindowWidth - 20f * WidthScale, y, ButtonWidth * (float)ListLength, 15f * HeightScale), select, List);
-        if(SelectLevel != select)
+        if(count > 1)
         {
-            ArmorBreakerMonitor.instance.SetCharacterArmorLevel(id, SelectLevel);
+            for(var index = -1; index < monitor.MaxLevel; index++)
+            {
+                if(index == monitor.CurrentLevel)
+                {
+                    monitor.Toggle[index] = false;
+                }
+                else
+                {
+                    monitor.Toggle[index] = true;
+                    monitor.SetArmorLevel(index);
+                }
+            }
+        }
+        if(count == 0)
+        {
+            monitor.Toggle[monitor.CurrentLevel] = true;
         }
     }
 
@@ -230,5 +265,39 @@ public class CheatMenu : MonoBehaviour
     {
         langtext = Language.LanguageText[key];
         return langtext[Language.NowLanguage];
+    }
+
+    public static void Debug()
+    {
+        // Todo
+        /*AppSettingProfile Data = ScriptableObject.CreateInstance<AppSettingProfile>();
+        Data = APP.App.settingProfile;
+        AppSettingProfile.Debug debugSettings = new AppSettingProfile.Debug()
+        {
+            IsEnabled = true,
+            openFullCostume = true,
+            openFullSkill = true,
+            openFullScene = true,
+            overwriteAchievementFullGet = true,
+            openStage = AppSettingProfile.Debug.OpenStageState.FullClear,
+            magicCrystalCount = 100000
+        };
+        Data.debug = debugSettings;*/
+        //foreach(var ins in FindObjectsOfType<AppController>())
+        //{
+            //ins.settingProfile.debug.IsEnabled = true;
+            //ins.releaseProfiles
+            //ins.settingProfile.debug.magicCrystalCount = 100000;
+            //ins.ApplyConfigSettings(true);
+            //Plugin.Log(LogLevel.Info, ins.releaseProfiles);
+            //Plugin.Log(LogLevel.Info, ins.settingProfile.debug.magicCrystalCount);
+            /*ins.ShowDebugController();
+            Data = ins.settingProfile;
+            Data.debug = debugSettings;
+            ins.settingProfile = Data;*/
+            //ins.ApplyConfigSettings(true);
+        //}
+        APP.App.appController.settingProfile.debug.IsEnabled = true;
+        Plugin.Log(LogLevel.Info, APP.App.appController.settingProfile.debug.IsEnabled);
     }
 }

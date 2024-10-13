@@ -1,83 +1,106 @@
-﻿using ACT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
 namespace Ricca_Uncensor_Plugin;
 
 [HarmonyPatch]
-public class ArmorBreakerPatch
+public static class ArmorBreakerPatch
 {
-    [HarmonyPatch(typeof(CharacterArmorBreaker), nameof(CharacterArmorBreaker.Initialize))]
+    [HarmonyPatch(typeof(ACT.CharacterArmorBreaker), "Initialize")]
 
     [HarmonyPostfix]
-    public static void InitializePostfix(CharacterArmorBreaker __instance)
+    private static void InitializePostfix(ACT.CharacterArmorBreaker __instance)
     {
-        ArmorBreakerMonitor.instance.AddInstance(__instance);
+        ArmorManager.Breakers.Add(new ArmorBreakerMonitor(__instance));
+    }
+
+    public static void SetCharacterArmorLevel(this ACT.CharacterArmorBreaker instance, int level)
+    {
+        instance.SetArmorLevel(level - 1, ACT.CharacterArmorBreaker.CostumeUpdateMode.Normal);
+    }
+
+    public static int GetMaxLevel(this ACT.CharacterArmorBreaker instance)
+    {
+        return instance.LevelList.Count;
+    }
+
+    public static string GetName(this ACT.CharacterArmorBreaker instance)
+    {
+        return instance.parentActor.IsPlayerActor ? instance.parentActor.NickName + CheatMenu.GetLanguageText("Player") : instance.parentActor.NickName;
     }
 }
 
-public class ArmorBreakerMonitor : MonoBehaviour
+public sealed class ArmorBreakerMonitor
 {
-    private static ArmorBreakerMonitor _instance;
-    public static ArmorBreakerMonitor instance => _instance;
-    public readonly List<CharacterArmorBreaker> Instance = new();
-    public void AddInstance(CharacterArmorBreaker __instance)
+    public readonly ACT.CharacterArmorBreaker instance;
+    public bool IsValid => instance != null && instance.IsProfileValid;
+    public string Name{get; private set;}
+    public int MaxLevel{get; private set;}
+    public int CurrentLevel => instance.CurrentArmorLevelIndex + 1;
+    public Rect LabelRect;
+    public Rect[] ToggleRect;
+    public bool[] Toggle;
+    public ArmorBreakerMonitor(ACT.CharacterArmorBreaker _instance)
     {
-        Instance.Add(__instance);
-    }
-
-    public void RemoveInstance(int id)
-    {
-        Instance.RemoveAt(id);
-    }
-
-    public string GetName(int id)
-    {
-        return Instance[id].parentActor.IsPlayerActor ? Instance[id].parentActor.NickName + CheatMenu.GetLanguageText("Player") : "Instance[id].parentActor.NickName";
-    }
-
-    public int GetCurrenctLevel(int id)
-    {
-        return Instance[id].CurrentArmorLevelIndex + 1;
-    }
-
-    public int GetMaxLevel(int id)
-    {
-        return Instance[id].LevelList.Count + 1;
-    }
-
-    public void SetCharacterArmorLevel(int id, int level)
-    {
-        Instance[id].SetArmorLevel(level - 1, CharacterArmorBreaker.CostumeUpdateMode.Normal);
-    }
-
-    private void EnsureBreakerListNotNull()
-    {
-        for (int i = Instance.Count - 1; i >= 0; i--)
+        instance = _instance;
+        if(IsValid)
         {
-            if (Instance[i] == null || !Instance[i].IsProfileValid)
-                RemoveInstance(i);
+            Name = instance.GetName();
+            MaxLevel = instance.GetMaxLevel();
+            float CurrentRow = ArmorManager.Breakers.Count * CheatMenu.SingleHeight + 30f;
+            LabelRect = new Rect(0, CurrentRow, 60f * CheatMenu.WidthScale, CheatMenu.SingleHeight);
+            ToggleRect = new Rect[MaxLevel];
+            for(var index = -1; index < MaxLevel; index++)
+            {
+                if(index == CurrentLevel)
+                {
+                    Toggle[index] = true;
+                }
+                else
+                {
+                    Toggle[index] = false;
+                }
+                ToggleRect[index] = new Rect(75f * CheatMenu.WidthScale + index * 30f * CheatMenu.WidthScale - 7f, CurrentRow, 14f, 14f);
+            }
         }
     }
 
-    private void Awake()
+    public void SetArmorLevel(int level)
     {
-        if (_instance != null && _instance != this)
+        instance.SetCharacterArmorLevel(level);
+    }
+
+    public void TweakHeghit()
+    {
+        LabelRect.y -= CheatMenu.SingleHeight;
+        for(var index = -1; index < MaxLevel; index++)
         {
-            Destroy(this);
-            return;
+            ToggleRect[index].y -= CheatMenu.SingleHeight;
         }
-        _instance = this;
     }
+}
 
-    private void OnDestroy()
+public sealed class ArmorManager : MonoBehaviour
+{
+    public static readonly List<ArmorBreakerMonitor> Breakers = new();
+    private void OnGUI()
     {
-        _instance = null;
-    }
-
-    private void Update()
-    {
-        EnsureBreakerListNotNull();
+        for(var index = Breakers.Count - 1; index >= 0; index--)
+        {
+            if(!Breakers[index].IsValid)
+            {
+                for(var current = index + 1; current + 1 < Breakers.Count; current++)
+                {
+                    Breakers[current].TweakHeghit();
+                }
+                Breakers[index] = null;
+                Breakers.RemoveAt(index);
+            }
+            else
+            {
+                CheatMenu.ArmorLabelToolbar(Breakers[index]);
+            }
+        }
     }
 }

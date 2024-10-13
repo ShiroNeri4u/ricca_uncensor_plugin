@@ -33,7 +33,7 @@ public class Plugin : BasePlugin
         log = base.Log;
 		Harmony harmony = new Harmony("moe.KazamataNeri.Ricca_Uncensor_Plugin");
 		harmony.PatchAll();
-		base.AddComponent<ArmorBreakerMonitor>();
+		base.AddComponent<ArmorManager>();
 		base.AddComponent<LanguageInit>();
 		base.AddComponent<CheatMenu>();
 		base.AddComponent<NoMosaic>();

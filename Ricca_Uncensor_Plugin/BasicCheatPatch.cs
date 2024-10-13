@@ -1,10 +1,9 @@
-using APP;
 using HarmonyLib;
 
 namespace Ricca_Uncensor_Plugin;
 
 [HarmonyPatch]
-public class BasicCheatPatch
+public static class BasicCheatPatch
 {
 
 	[HarmonyPatch(typeof(CharacterActor), "CurrentHitPoint", MethodType.Setter)]
@@ -44,7 +43,7 @@ public class BasicCheatPatch
 		}
 	}
 
-	[HarmonyPatch(typeof(App.PlayerParameter), "SubMagicCrystalCount")]
+	[HarmonyPatch(typeof(APP.App.PlayerParameter), "SubMagicCrystalCount")]
 
 	[HarmonyPrefix]
 	public static void SubMagicCrystalCountPrefix(ref int sub)
