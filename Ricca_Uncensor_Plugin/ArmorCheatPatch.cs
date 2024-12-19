@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
-using UnityEngine;
 
 namespace Ricca_Uncensor_Plugin;
 
@@ -12,17 +11,12 @@ public static class ArmorBreakerPatch
     [HarmonyPostfix]
     private static void InitializePostfix(ACT.CharacterArmorBreaker __instance)
     {
-        ArmorManager.Breakers.Add(new ArmorBreakerMonitor(__instance));
-    }
-
-    public static void SetCharacterArmorLevel(this ACT.CharacterArmorBreaker instance, int level)
-    {
-        instance.SetArmorLevel(level - 1, ACT.CharacterArmorBreaker.CostumeUpdateMode.Normal);
+        ArmorManager.Breakers.Add(new ArmorBreakerMonitor(__instance, ArmorManager.Breakers.Count));
     }
 
     public static int GetMaxLevel(this ACT.CharacterArmorBreaker instance)
     {
-        return instance.LevelList.Count;
+        return instance.LevelList.Count + 1;
     }
 
     public static string GetName(this ACT.CharacterArmorBreaker instance)
@@ -33,73 +27,29 @@ public static class ArmorBreakerPatch
 
 public sealed class ArmorBreakerMonitor
 {
-    public readonly ACT.CharacterArmorBreaker instance;
-    public bool IsValid => instance != null && instance.IsProfileValid;
-    public string Name{get; private set;}
-    public int MaxLevel{get; private set;}
-    public int CurrentLevel => instance.CurrentArmorLevelIndex + 1;
-    public Rect LabelRect;
-    public Rect[] ToggleRect;
-    public bool[] Toggle;
-    public ArmorBreakerMonitor(ACT.CharacterArmorBreaker _instance)
+    public ACT.CharacterArmorBreaker Instance;
+    public bool IsValid => Instance != null && Instance.IsProfileValid;
+    public string Name { get; private set; }
+    public int MaxLevel => Instance.GetMaxLevel();
+    public int CurrentLevel => Instance.currentArmorLevelIndex + 1;
+    public ArmorBreakerMonitor(ACT.CharacterArmorBreaker _instance, int _index)
     {
-        instance = _instance;
-        if(IsValid)
-        {
-            Name = instance.GetName();
-            MaxLevel = instance.GetMaxLevel();
-            float CurrentRow = ArmorManager.Breakers.Count * CheatMenu.SingleHeight + 30f;
-            LabelRect = new Rect(0, CurrentRow, 60f * CheatMenu.WidthScale, CheatMenu.SingleHeight);
-            ToggleRect = new Rect[MaxLevel];
-            for(var index = -1; index < MaxLevel; index++)
-            {
-                if(index == CurrentLevel)
-                {
-                    Toggle[index] = true;
-                }
-                else
-                {
-                    Toggle[index] = false;
-                }
-                ToggleRect[index] = new Rect(75f * CheatMenu.WidthScale + index * 30f * CheatMenu.WidthScale - 7f, CurrentRow, 14f, 14f);
-            }
-        }
-    }
-
-    public void SetArmorLevel(int level)
-    {
-        instance.SetCharacterArmorLevel(level);
-    }
-
-    public void TweakHeghit()
-    {
-        LabelRect.y -= CheatMenu.SingleHeight;
-        for(var index = -1; index < MaxLevel; index++)
-        {
-            ToggleRect[index].y -= CheatMenu.SingleHeight;
-        }
+        Instance = _instance;
+        Name = Instance.GetName();
     }
 }
 
-public sealed class ArmorManager : MonoBehaviour
+public static class ArmorManager
 {
-    public static readonly List<ArmorBreakerMonitor> Breakers = new();
-    private void OnGUI()
+    public static readonly List<ArmorBreakerMonitor> Breakers = [];
+    public static void EnsureNotEmpty()
     {
-        for(var index = Breakers.Count - 1; index >= 0; index--)
+        for (int index = Breakers.Count - 1; index >= 0; index--)
         {
-            if(!Breakers[index].IsValid)
+            if (!Breakers[index].IsValid)
             {
-                for(var current = index + 1; current + 1 < Breakers.Count; current++)
-                {
-                    Breakers[current].TweakHeghit();
-                }
                 Breakers[index] = null;
                 Breakers.RemoveAt(index);
-            }
-            else
-            {
-                CheatMenu.ArmorLabelToolbar(Breakers[index]);
             }
         }
     }

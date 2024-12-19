@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using Il2CppInterop.Runtime.Injection;
 
 namespace Ricca_Uncensor_Plugin;
 
@@ -33,7 +34,6 @@ public class Plugin : BasePlugin
         log = base.Log;
 		Harmony harmony = new Harmony("moe.KazamataNeri.Ricca_Uncensor_Plugin");
 		harmony.PatchAll();
-		base.AddComponent<ArmorManager>();
 		base.AddComponent<LanguageInit>();
 		base.AddComponent<CheatMenu>();
 		base.AddComponent<NoMosaic>();
